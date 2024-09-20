@@ -49,6 +49,7 @@ public class snakemove : MonoBehaviour
             0.0f
         );
     }
+   
     private void Grow()
     {
         Transform segment = Instantiate(this.segmentPrefab);
@@ -62,7 +63,15 @@ public class snakemove : MonoBehaviour
         {
             Grow();
         }
+        if (other.tag == "wall")
+        {
+            foreach (var segment in _segments)
+            {
+                GameObject.Destroy(segment.gameObject);
+            }
+        }
+
     }
 
-
+  
 }

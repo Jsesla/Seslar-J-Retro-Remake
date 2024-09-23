@@ -11,26 +11,28 @@ public class snakemove : MonoBehaviour
 
     private void Start()
     {
-        _segments = new List<Transform>();
-        _segments.Add(this.transform);
+        _segments = new()
+        {
+            this.transform
+        };
 
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKeyDown(KeyCode.W) && _direction != Vector2.down)
         {
             _direction = Vector2.up;
         }
-        if (Input.GetKeyDown(KeyCode.A)) 
+        if (Input.GetKeyDown(KeyCode.A) && _direction != Vector2.right) 
         {
             _direction = Vector2.left;
         }
-        if (Input.GetKeyDown(KeyCode.S)) 
+        if (Input.GetKeyDown(KeyCode.S) && _direction != Vector2.up) 
         {
             _direction = Vector2.down;
         }
-        if (Input.GetKeyDown(KeyCode.D)) 
+        if (Input.GetKeyDown(KeyCode.D) && _direction != Vector2.left) 
         {
             _direction = Vector2.right;
         }
@@ -57,21 +59,27 @@ public class snakemove : MonoBehaviour
         _segments.Add(segment);
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (other.tag == "food")
+        if (collision.gameObject.CompareTag("food"))
         {
             Grow();
         }
-        if (other.tag == "wall")
+        if (collision.gameObject.tag == "wall")
         {
-            foreach (var segment in _segments)
+            _segments[0].transform.position = new Vector2(0, 0);
+            
+            for (int i = 1; i < _segments.Count; i++)
             {
+                var segment = _segments[i];
+ 
+           
+
                 GameObject.Destroy(segment.gameObject);
             }
+
+            _segments.Clear();
+            _segments.Add(this.transform);
         }
-
     }
-
-  
 }

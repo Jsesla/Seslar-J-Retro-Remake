@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class snakemove : MonoBehaviour
 {
-    private Vector2 _direction = Vector2.right;
+    //queue stores like a line can strictly only access the next element
+    private Queue<Vector2> _direction = new();
+    private Vector2 _currentDirection;
     private List<Transform> _segments;
     public Transform segmentPrefab;
+    public int maxbuffer = 2;
 
 
     private void Start()
@@ -16,27 +20,41 @@ public class snakemove : MonoBehaviour
             this.transform
         };
 
+        _direction.Enqueue(Vector2.right);
+        //stores current direction to set up default direction
+        _currentDirection = _direction.Peek();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.W) && _direction != Vector2.down)
+        Vector2 nextDirection = default;
+        if (_direction.Count > 0)
+            nextDirection = _direction.Peek();
+        else
+            nextDirection = _currentDirection;
+        if (_direction.Count > maxbuffer)
         {
-            _direction = Vector2.up;
+            return;
         }
-        if (Input.GetKeyDown(KeyCode.A) && _direction != Vector2.right) 
+
+        if (Input.GetKeyDown(KeyCode.W) && nextDirection != Vector2.down)
         {
-            _direction = Vector2.left;
-        }
-        if (Input.GetKeyDown(KeyCode.S) && _direction != Vector2.up) 
-        {
-            _direction = Vector2.down;
-        }
-        if (Input.GetKeyDown(KeyCode.D) && _direction != Vector2.left) 
-        {
-            _direction = Vector2.right;
-        }
+            _direction.Enqueue(Vector2.up);
             
+        }
+        if (Input.GetKeyDown(KeyCode.A) && nextDirection != Vector2.right) 
+        {
+            _direction.Enqueue(Vector2.left);
+        }
+        if (Input.GetKeyDown(KeyCode.S) && nextDirection != Vector2.up) 
+        {
+            _direction.Enqueue(Vector2.down);
+        }
+        if (Input.GetKeyDown(KeyCode.D) && nextDirection != Vector2.left) 
+        {
+            _direction.Enqueue(Vector2.right);
+        }
+
     }
     private void FixedUpdate()
     {
@@ -45,9 +63,12 @@ public class snakemove : MonoBehaviour
             _segments[i].position = _segments[i - 1].position;
         }
 
+        if (_direction.Count > 0)
+            _currentDirection = _direction.Dequeue();
+
         this.transform.position = new Vector3(
-            Mathf.Round(this.transform.position.x) + _direction.x,
-            Mathf.Round(this.transform.position.y) + _direction.y,
+            Mathf.Round(this.transform.position.x) + _currentDirection.x,
+            Mathf.Round(this.transform.position.y) + _currentDirection.y,
             0.0f
         );
     }
@@ -57,6 +78,7 @@ public class snakemove : MonoBehaviour
         Transform segment = Instantiate(this.segmentPrefab);
         segment.position = _segments[_segments.Count - 1].position;
         _segments.Add(segment);
+        Particooolss.TargetPosition = segment;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
